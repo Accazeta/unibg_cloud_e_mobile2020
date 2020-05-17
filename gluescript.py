@@ -61,9 +61,9 @@ watchnext_dataset = spark.read.option("header","true").csv(watchnext_dataset_pat
 
 watchnext_dataset.printSchema()
 #ADD WATCHNEXT TO THE MODEL
-watchnext_dataset_agg = watchnext_dataset.groupBy(col("idx").alias("idx_ref")).agg(collect_list("url").alias("URL")).agg(collect_list("watch_next_idx").alias("watch_next"))
+watchnext_dataset_agg = watchnext_dataset.groupBy(col("idx").alias("idx_ref")).agg(collect_list("watch_next_idx").alias("watch_next"))
 watchnext_dataset_agg.printSchema()
-tedx_dataset_agg = tedx_dataset.join(watchnext_dataset_agg, tedx_dataset.idx == watchnext_dataset_agg.idx_ref, "left").drop("idx_ref").select(col("watch_next"),col("*")).select(col("url"),col("*"))
+tedx_dataset_agg = tedx_dataset_agg.join(watchnext_dataset_agg, tedx_dataset_agg._id == watchnext_dataset_agg.idx_ref, "left").drop("idx_ref").select(col("watch_next"),col("*"))
 tedx_dataset_agg.printSchema()
 
 
