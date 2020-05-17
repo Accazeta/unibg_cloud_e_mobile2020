@@ -66,6 +66,15 @@ watchnext_dataset_agg.printSchema()
 tedx_dataset_agg = tedx_dataset_agg.join(watchnext_dataset_agg, tedx_dataset_agg._id == watchnext_dataset_agg.idx_ref, "left").drop("idx_ref").select(col("watch_next"),col("*"))
 tedx_dataset_agg.printSchema()
 
+#PARTE OPZIONALE:
+#READ TEDUPLOADER:
+teduploader_dataset_path = "s3://unibg-tedx-data-bucket/tedUploader.csv"
+teduploader_dataset = spark.read.option("header","true").csv(teduploader_dataset_path)
+
+teduploader_dataset.printSchema()
+#ADD TEDUPLOADERTOMODEL:
+tedx_dataset_agg = tedx_dataset_agg.join(teduploader_dataset, tedx_dataset_agg._id == teduploader_dataset.idxVideo, "left").drop("idxVideo").select(col("email"),col("*"))
+
 
 mongo_uri = "mongodb://mycluster-shard-00-00-6zdcg.mongodb.net:27017,mycluster-shard-00-01-6zdcg.mongodb.net:27017,mycluster-shard-00-02-6zdcg.mongodb.net:27017"
 
