@@ -73,8 +73,11 @@ teduploader_dataset = spark.read.option("header","true").csv(teduploader_dataset
 
 teduploader_dataset.printSchema()
 #ADD TEDUPLOADERTOMODEL:
-tedx_dataset_agg = tedx_dataset_agg.join(teduploader_dataset, tedx_dataset_agg._id == teduploader_dataset.idxVideo, "left").drop("idxVideo").select(col("email"),col("*"))
-
+#tedx_dataset_agg = tedx_dataset_agg.join(teduploader_dataset, tedx_dataset_agg._id == teduploader_dataset.idxVideo, "left").drop("idxVideo").select(col("email"),col("*"))
+teduploader_dataset_agg = teduploader_dataset.join(tedx_dataset_agg, teduploader_dataset.idxVideo == tedx_dataset.idx, "left").drop("_id").select("email","mainSpeaker")
+teduploader_dataset.printSchema()
+teduploader_dataset_agg = teduploader_dataset_agg.groupBy("email","main_speaker").agg(collect_list("idxVideo"))
+teduploader_dataset.printSchema()
 
 mongo_uri = "mongodb://mycluster-shard-00-00-6zdcg.mongodb.net:27017,mycluster-shard-00-01-6zdcg.mongodb.net:27017,mycluster-shard-00-02-6zdcg.mongodb.net:27017"
 
@@ -88,4 +91,9 @@ write_mongo_options = {
     "ssl.domain_match": "false"}#vado ad impostare le opzioni di configurazione
 from awsglue.dynamicframe import DynamicFrame
 tedx_dataset_dynamic_frame = DynamicFrame.fromDF(tedx_dataset_agg, glueContext, "nested")
+glueContext.write_dynamic_frame.from_options(tedx_dataset_dynamic_frame, connection_type="mongodb", connection_options=write_mongo_options)
+
+
+#WRITE THE NEW COLLECTION:
+write_mongo_options["collection"] = "tedx_uploader_email"
 glueContext.write_dynamic_frame.from_options(tedx_dataset_dynamic_frame, connection_type="mongodb", connection_options=write_mongo_options)
