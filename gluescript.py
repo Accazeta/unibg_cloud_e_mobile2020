@@ -1,3 +1,6 @@
+###### TEDx-Load-Aggregate-Model
+######
+
 import sys
 import json
 import pyspark
@@ -11,7 +14,6 @@ from awsglue.job import Job
 
 ##### FROM FILES
 tedx_dataset_path = "s3://unibg-tedx-data-bucket/tedx_dataset.csv"
-
 
 ###### READ PARAMETERS
 args = getResolvedOptions(sys.argv, ['JOB_NAME'])
@@ -57,16 +59,13 @@ tedx_dataset_agg.printSchema()
 #PRIMO HOMEWORK:
 #ADD WATCHNEXT:
 watchnext_dataset_path = "s3://unibg-tedx-data-bucket/watch_next_dataset.csv"
-watchnext_dataset = spark.read.option("header","true").csv(watchnext_dataset_path)
-
-watchnext_dataset.printSchema()
+watchnext_dataset = spark.read.option("header","true").option("quote","\"").option("escape","\"").csv(watchnext_dataset_path)
 #ADD WATCHNEXT TO THE MODEL
 watchnext_dataset_agg = watchnext_dataset.groupBy(col("idx").alias("idx_ref")).agg(collect_list("watch_next_idx").alias("watch_next"))
 watchnext_dataset_agg.printSchema()
 tedx_dataset_agg = tedx_dataset_agg.join(watchnext_dataset_agg, tedx_dataset_agg._id == watchnext_dataset_agg.idx_ref, "left").drop("idx_ref").select(col("watch_next"),col("*"))
 tedx_dataset_agg.printSchema()
 
-#PARTE OPZIONALE:
 #READ TEDUPLOADER:
 teduploader_dataset_path = "s3://unibg-tedx-data-bucket/tedUploader.csv"
 teduploader_dataset = spark.read.option("header","true").csv(teduploader_dataset_path)
@@ -74,10 +73,11 @@ teduploader_dataset = spark.read.option("header","true").csv(teduploader_dataset
 teduploader_dataset.printSchema()
 #ADD TEDUPLOADERTOMODEL:
 #tedx_dataset_agg = tedx_dataset_agg.join(teduploader_dataset, tedx_dataset_agg._id == teduploader_dataset.idxVideo, "left").drop("idxVideo").select(col("email"),col("*"))
-teduploader_dataset_agg = teduploader_dataset.join(tedx_dataset, teduploader_dataset.idxVideo == tedx_dataset.idx, "left").drop("_id").select("email","main_speaker","idxVideo")
-
-teduploader_dataset_agg = teduploader_dataset_agg.groupBy("email","main_speaker").agg(collect_list("idxVideo"))
-
+#teduploader_dataset_agg = tedx_dataset_agg.join(teduploader_dataset, tedx_dataset_agg._id == teduploader_dataset.idxVideo, "left").drop("_id").select(col("email"),col("main_speaker"))
+teduploader_dataset_agg = teduploader_dataset.join(tedx_dataset, teduploader_dataset.idxVideo == tedx_dataset.idx, "left").select(col("idxUser").alias("_id"),"email","main_speaker","idxVideo")
+teduploader_dataset.printSchema()
+teduploader_dataset_agg = teduploader_dataset_agg.groupBy("_id","email","main_speaker").agg(collect_list("idxVideo").alias("idxVideo"))
+teduploader_dataset.printSchema()
 
 
 mongo_uri = "mongodb://mycluster-shard-00-00-6zdcg.mongodb.net:27017,mycluster-shard-00-01-6zdcg.mongodb.net:27017,mycluster-shard-00-02-6zdcg.mongodb.net:27017"
