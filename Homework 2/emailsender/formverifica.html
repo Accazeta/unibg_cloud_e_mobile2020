@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="text/javascript" src="jquery-2.0.0.js"></script>
+        <style>
+            .button {
+            background-color:  #008CBA; 
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            border-radius: 12px;
+            }           
+        </style>
+    </head>
+
+    <body>
+        <script>
+
+            var selector = {
+                ver: '#ver',
+                result : '#result'
+            }
+            var success = function(){
+                $(selector.result).html("<p>Account verified! Go back to the app</p>")
+            }
+            var eventHandler = function ( event ) 
+            {
+                //event.preventDefault();
+                //Qui andrà la chiamata ajax. Per ora metto solo il messaggio che dovrebbe stampare in caso di esito positivo.
+                success(); 
+            }
+
+            var verified = function(){
+                $(selector.ver).bind("click", eventHandler);
+            }
+            
+            $(verified);
+        </script> 
+        <div id = "result">
+            <form name = "verification">
+                <button type = "button" id = "ver" class = "button">Verifica Account</button>
+            </form>
+        </div>
+    </body>
+</html>
