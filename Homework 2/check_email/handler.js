@@ -35,7 +35,7 @@ module.exports.get_email = (event, context, callback) => {
                 callback(null, {
                     statusCode: err.statusCode || 500,
                     headers: { 'Content-Type': 'text/plain' },
-                    body: 'Could not fetch the watch nexts.'
+                    body: 'Could not fetch the uploader in TEDx media uploader list.'
                 })
             );
     });
